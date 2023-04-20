@@ -130,7 +130,7 @@ public:
                 } else {
                     _begin = node->_next;
                 }
-                
+
                 if (node->_next != nullptr) {
                     node->_next->_prev = node->_prev;
                 } else {
@@ -146,15 +146,63 @@ public:
     }
 
     value_type pop(const size_t index) {
-
+        if (0 > index && index > _size) {
+            return NULL;
+        }
+        node_type *node = _begin;
+        size_t item_conter = 0;
+        while (node != nullptr) {
+            if (item_conter == index) {
+                if (node->_prev != nullptr) {
+                    node->_prev->_next = node->_next;
+                } else {
+                    _begin = node->_next;
+                }
+                if (node->_next != nullptr) {
+                    node->_next->_prev = node->_prev;
+                } else {
+                    _end = node->_prev;
+                }
+                value_type value = node->_value;
+                delete node;
+                return value;
+            }
+            node = node->next();
+            item_conter += 1;
+        }
+        return NULL;
     }
     
     node_type& find(const size_t index) {
-
+        if (0 > index && index > _size) {
+            return *_end;
+        }
+        node_type *node = _begin;
+        size_t item_conter = 0;
+        while (node != nullptr) {
+            if (item_conter == index) {
+                return *node;
+            }
+            node = node->next();
+            item_conter += 1;
+        }
+        return *_end;
     }
 
     value_type at(const size_t index) {
-
+        if (0 > index && index > _size) {
+            return NULL;
+        }
+        node_type *node = _begin;
+        size_t item_conter = 0;
+        while (node != nullptr) {
+            if (item_conter == index) {
+                return node->_value;
+            }
+            node = node->next();
+            item_conter += 1;
+        }
+        return NULL;
     }
 
     friend std::ostream& operator<<(std::ostream &stream, const doubly_linked_list &list) {
