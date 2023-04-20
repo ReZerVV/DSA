@@ -2,6 +2,9 @@
 
 ## Reference:
 * Doubly Linked List - _https://www.programiz.com/dsa/doubly-linked-list_
+* Priority Queue - _https://www.programiz.com/dsa/priority-queue_
+* Heap - _https://www.programiz.com/dsa/heap-data-structure_
+
 
 ## Linear data structures.
 
@@ -18,5 +21,17 @@ __Operations on a doubly linked list:__
 `find` - searching for an element in a doubly linked list.
 
 `at` - getting an element in a doubly linked list by index.
+
+`print` - doubly linked list output to console.
+
+__Operations on a priority queue:__
+
+`append` - adding an element to the priority queue.
+
+`sort` - sort priority queue.
+
+`array` - building a priority queue based on an array.
+
+`pop` - get and remove element from the list by index.
 
 `print` - doubly linked list output to console.
