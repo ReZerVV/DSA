@@ -117,8 +117,32 @@ public:
         return false;
     }
     
-    void remove(const size_t index) {
-
+    bool remove(const size_t index) {
+        if (0 > index && index > _size) {
+            return false;
+        }
+        node_type *node = _begin;
+        size_t item_conter = 0;
+        while (node != nullptr) {
+            if (item_conter == index) {
+                if (node->_prev != nullptr) {
+                    node->_prev->_next = node->_next;
+                } else {
+                    _begin = node->_next;
+                }
+                
+                if (node->_next != nullptr) {
+                    node->_next->_prev = node->_prev;
+                } else {
+                    _end = node->_prev;
+                }
+                delete node;
+                return true;
+            }
+            node = node->next();
+            item_conter += 1;
+        }
+        return false;
     }
 
     value_type pop(const size_t index) {
