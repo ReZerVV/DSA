@@ -2,8 +2,8 @@
 #define DOUBLY_LINKED_LIST_H_
 
 #include <stddef.h>
+
 #include <iostream>
-#include "doubly_linked_list.hpp"
 
 template <typename _Tp>
 class node_doubly_linked_list {
@@ -47,7 +47,7 @@ template <typename _Tp>
 class doubly_linked_list {
 public:    
     using value_type = _Tp;
-    using node_type = doubly_linked_list< node_doubly_linked_list<_Tp> >;
+    using node_type = node_doubly_linked_list<_Tp>;
 public:
 // Constructors.
     doubly_linked_list()

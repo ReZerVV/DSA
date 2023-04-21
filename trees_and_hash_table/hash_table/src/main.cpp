@@ -1,12 +1,16 @@
 #include <iostream>
 #include "hash_table.hpp"
 
-struct hash {};
+struct hash {
+    size_t operator()(int value) {
+        return value * 99 % 100;
+    }
+};
 
 int main(int argc, char** argv) {
     hash_table<int, int, hash> h{ };
-    h.append(10,10);
-    h[1] = 100;
-    std::cout << h[1] << std::endl;
+    h.append(1,1);
+    h[2];
+    std::cout << h.at(1) << std::endl;
     return 0;
 }

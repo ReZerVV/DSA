@@ -4,6 +4,8 @@
 #include <iostream>
 #include <stddef.h>
 #include <malloc.h>
+#include <cstring>
+#include <exception>
 
 template <typename _vTp, typename _kTp>
 class node_hash_table {
@@ -40,6 +42,7 @@ public:
     }
     node_hash_table& operator=(const value_type value) {
         _value = value;
+        _state = true;
         return *this;
     }
 // Movable constructors.
@@ -48,7 +51,7 @@ public:
     ~node_hash_table() = default;
 public:
     friend std::ostream& operator<<(std::ostream &stream, const node_hash_table &node) {
-        stream << node._key << ':' << node._value << ' ';
+        stream << node._value << ' ';
         return stream;
     }
     bool state() const { return _state; }
@@ -60,7 +63,7 @@ private:
     value_type  _value;
 };
 
-#define HASH_TABLE_BUFFER_CAPACITY_ 1
+#define HASH_TABLE_BUFFER_CAPACITY_ 2
 template <typename _vTp, typename _kTp, typename _hFunc>
 class hash_table {
 public:
@@ -89,9 +92,17 @@ public:
 public:
     size_t capacity() const { return _capacity; }
     
-    size_t size() const { return _size; }
+    size_t size() const { 
+        size_t size = 0;
+        for (size_t index = 0; index < _capacity; ++index) {
+            if (_buffer[index]._state) {
+                size += 1;
+            }
+        }
+        return size; 
+    }
     
-    size_t empty() const { return _size == 0; }
+    size_t empty() const { return size() == 0; }
 
     bool contains(const key_type key) {
         if (empty()) {
@@ -106,25 +117,71 @@ public:
     }
 
     void append(key_type key, value_type value) {
-        if (_size >= _capacity) {
+        if (size() >= _capacity) {
             mem_reallocation();
         }
-        for (size_t index = 0; index < _capacity; ++index) {
+        size_t index = _hash(key) % _capacity;
+        if (!_buffer[index]._state) {
+            _buffer[index] = node_type{key, value};
+            _size += 1;
+            return;
+        }
+        if (contains(key)) {
+            throw std::out_of_range("item already exists");
+        }
+        while (true) {
+            index = (index + 1) % _capacity;
             if (!_buffer[index]._state) {
                 _buffer[index] = node_type{key, value};
                 _size += 1;
+                return;
             }
         }
     }
 
-    void remove() {}
-    
-    node_type& at(const key_type key) {
-        for (size_t index = 0; index < _capacity; ++index) {
+    void remove(key_type key) {
+        if (!empty()) {
+            size_t index = _hash(key) % _capacity;
+            if (!_buffer[index]._state) {
+                throw std::out_of_range("item is not found");
+            }
             if (_buffer[index]._state && _buffer[index]._key == key) {
-               return _buffer[index];
+                _buffer[index]._state = false;
+                _size -= 1;
+                return;
+            }
+            if (!contains(key)) {
+                throw std::out_of_range("item already exists");
+            }
+            while (true) {
+                index = (index + 1) % _capacity;
+                if (_buffer[index]._state && _buffer[index]._key == key) {
+                    _buffer[index]._state = false;
+                    _size -= 1;
+                    return;
+                }
             }
         }
+    }
+    
+    node_type& at(const key_type key) {
+        if (!empty()) {
+            size_t index = _hash(key) % _capacity;
+            if (!_buffer[index]._state) {
+                throw std::out_of_range("item is not found");
+            }
+            if (_buffer[index]._state && _buffer[index]._key == key) {
+                return _buffer[index];
+            }
+            while (contains(key)) {
+                index = (index + 1) % _capacity;
+                if (_buffer[index]._state && _buffer[index]._key == key) {
+                    return _buffer[index];
+                }
+            }
+            throw std::out_of_range("item is not found");
+        }
+        throw std::out_of_range("hash table is empty");
     }
 
     node_type& operator[](const key_type key) {
@@ -135,11 +192,15 @@ public:
             if (_size >= _capacity) {
                 mem_reallocation();
             }
-            for (size_t index = 0; index < _capacity; ++index) {
+            size_t index = _hash(key) % _capacity;
+            if (!_buffer[index]._state) {
+                _buffer[index]._key = key;
+                return _buffer[index];
+            }
+            while (true) {
+                index = (index + 1) % _capacity;
                 if (!_buffer[index]._state) {
                     _buffer[index]._key = key;
-                    _buffer[index]._state = true;
-                    _size += 1;
                     return _buffer[index];
                 }
             }
@@ -157,10 +218,14 @@ public:
         return stream;
     }
 private:
-
     void mem_reallocation() {
         _capacity *= 2;
-        _buffer = static_cast<node_type*>(realloc(_buffer, _capacity));
+        node_type *new_buffer = new node_type[_capacity];
+        for (size_t index = 0; index < _size; ++index) {
+            new_buffer[index] = _buffer[index];
+        }
+        delete _buffer;
+        _buffer = new_buffer;
     }
     void mem_free() {
         delete _buffer;
