@@ -5,6 +5,7 @@
 * Priority Queue - _https://www.programiz.com/dsa/priority-queue_
 * Heap - _https://www.programiz.com/dsa/heap-data-structure_
 * Heap Sort - _https://www.programiz.com/dsa/heap-sort_
+* Hash Table - _https://www.programiz.com/dsa/hash-table_
 
 ## Linear data structures.
 
@@ -35,3 +36,15 @@ __Operations on a priority queue:__
 `pop` - get and remove element from the list by index.
 
 `print` - doubly linked list output to console.
+
+## Trees and Hash Table.
+
+__Operations on a hash table:__
+
+`append` - adding an element to the hash table.
+
+`remove` - removing an element from the hash table by key.
+
+`at` - get element from the list by key.
+
+`print` - hash table output to console.
