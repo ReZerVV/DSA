@@ -4,7 +4,7 @@
 * Doubly Linked List - _https://www.programiz.com/dsa/doubly-linked-list_
 * Priority Queue - _https://www.programiz.com/dsa/priority-queue_
 * Heap - _https://www.programiz.com/dsa/heap-data-structure_
-
+* Heap Sort - _https://www.programiz.com/dsa/heap-sort_
 
 ## Linear data structures.
 

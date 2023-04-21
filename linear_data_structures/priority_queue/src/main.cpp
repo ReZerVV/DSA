@@ -1,4 +1,8 @@
 #include <iostream>
+
+// Test priority queue.
+#if false
+
 #include "priority_queue.hpp"
 
 struct compare {
@@ -40,3 +44,30 @@ int main(int argc, char** argv) {
     delete buffer;
     return 0;
 }
+
+#endif
+
+// Heap sort.
+#if true
+
+#include <stddef.h>
+#include "algo.hpp"
+
+struct compare {
+    bool operator()(int first_value, int second_value) {
+        return first_value < second_value;
+    }
+}; 
+
+int main(int argv, char** argc) {
+    int buffer[] = { 12,5,6,85,23,65 };
+    size_t size = sizeof(buffer) / sizeof(buffer[0]);
+
+    print_array(buffer, size);
+    heap_sort(buffer, size, compare{  });
+    print_array(buffer, size);
+    
+    return 0;
+}
+
+#endif

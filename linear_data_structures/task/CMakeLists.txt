@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(doubly_linked_list CXX)
+project(weather CXX)
 
 include_directories(${PROJECT_NAME}
     include/
