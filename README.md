@@ -6,6 +6,7 @@
 * Heap - _https://www.programiz.com/dsa/heap-data-structure_
 * Heap Sort - _https://www.programiz.com/dsa/heap-sort_
 * Hash Table - _https://www.programiz.com/dsa/hash-table_
+* B-Tree - _https://www.programiz.com/dsa/b-tree_
 
 ## Linear data structures.
 
@@ -48,3 +49,13 @@ __Operations on a hash table:__
 `at` - get element from the list by key.
 
 `print` - hash table output to console.
+
+__Operations on a b-tree:__
+
+`append` - adding an element to the hash table..
+
+`remove` - removing an element form the b-tree.
+
+`search` - searching for an element in a b tree.
+
+`print` - b-tree output to console.

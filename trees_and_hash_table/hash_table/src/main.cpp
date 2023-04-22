@@ -10,7 +10,7 @@ struct hash {
 int main(int argc, char** argv) {
     hash_table<int, int, hash> h{ };
     h.append(1,1);
-    h[2];
-    std::cout << h.at(1) << std::endl;
+    h[2] = 10;
+    std::cout << h.at(2) << std::endl;
     return 0;
 }

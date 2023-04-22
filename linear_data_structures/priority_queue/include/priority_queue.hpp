@@ -142,7 +142,7 @@ private:
     }
     
     void mem_free() {
-        delete _buffer;
+        delete[] _buffer;
     }
 private:
     size_t          _capacity;
