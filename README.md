@@ -6,7 +6,9 @@
 * Heap - _https://www.programiz.com/dsa/heap-data-structure_
 * Heap Sort - _https://www.programiz.com/dsa/heap-sort_
 * Hash Table - _https://www.programiz.com/dsa/hash-table_
-* B-Tree - _https://www.programiz.com/dsa/b-tree_
+* B-Tree search - _https://www.programiz.com/dsa/b-tree_
+* B-Tree insert - _https://www.programiz.com/dsa/insertion-into-a-b-tree_
+* B-Tree remove - _https://www.programiz.com/dsa/deletion-from-a-b-tree_
 
 ## Linear data structures.
 

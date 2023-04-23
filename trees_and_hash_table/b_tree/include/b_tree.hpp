@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <iostream>
+#include <exception>
 
 template <typename _Tp>
 class node_b_tree {
@@ -44,6 +45,155 @@ public:
         }
         
         return _nodes[index]->search(key);
+    }
+
+    void remove(const key_type key) {
+        int kindex = 0;
+        while (kindex < _size && _key[kindex] < key) {
+            kindex += 1;
+        }
+
+        if (kindex < _size && _key[kindex] == key) {
+            if (_leaf) {
+                for (int index = kindex; index < _size-1; ++index) {
+                    _key[index] = _key[index+1];
+                }
+                _size -= 1;
+            } else {
+                if (_nodes[kindex]->_size >= _degree) {
+
+                    node_b_tree<_Tp> *cur = _nodes[kindex];
+                    while (!cur->_leaf) {
+                        cur = cur->_nodes[cur->_size];
+                    }
+                    const int pred = cur->_key[cur->_size-1];
+                    _key[kindex] = pred;
+                    _nodes[kindex]->remove(pred);
+
+                } else if (_nodes[kindex+1]->_size >= _degree) {
+
+                    node_b_tree<_Tp> *cur = _nodes[kindex+1];
+                    while (!cur->_leaf) {
+                        cur = cur->_nodes[0];
+                    }
+                    const int succ = cur->_key[0];
+                    _key[kindex] = succ;
+                    _nodes[kindex+1]->remove(succ);
+
+                } else {
+
+                    merge(kindex);
+                    _nodes[kindex]->remove(_key[kindex]);
+
+                }
+            }
+        } else {
+            if (_leaf) {
+                throw std::out_of_range("key does not exist");
+            }
+
+            if (_nodes[kindex]->_size < _degree) {
+                if (kindex != 0 && _nodes[kindex - 1]->_size >= _degree) {
+                    borrow_from_prev(kindex);
+                } else if (kindex != _size && _nodes[kindex + 1]->_size >= _degree) {
+                    borrow_from_next(kindex);
+                } else {
+                    if (kindex != _size) {
+                        merge(kindex);
+                    } else {
+                        merge(kindex - 1);
+                    }
+                }
+            }
+
+            if (kindex >= _size) {
+                _nodes[kindex - 1]->remove(key);
+            }
+            else {
+                _nodes[kindex]->remove(key);
+            }
+        }
+    }
+
+    void borrow_from_prev(const int index) {
+        node_b_tree<_Tp> *child = _nodes[index];
+        node_b_tree<_Tp> *sibling = _nodes[index-1];
+
+        for (int i = child->_size-1; i >= 0; --i) {
+            child->_key[i+1] = child->_key[i];
+        }
+
+        if (!child->_leaf) {
+            for (int i = child->_size; i >= 0; --i) {
+                child->_nodes[i+1] = child->_nodes[i];
+            }
+        }
+
+        child->_key[0] = _key[index-1];
+
+        if (!child->_leaf) {
+            child->_nodes[0] = sibling->_nodes[sibling->_size];
+        }
+
+        _key[index-1] = sibling->_key[sibling->_size-1];
+
+        child->_size += 1;
+        sibling->_size -= 1;
+    }
+
+    void borrow_from_next(const int index) {
+        node_b_tree<_Tp> *child = _nodes[index];
+        node_b_tree<_Tp> *sibling = _nodes[index+1];
+
+        child->_key[(child->_size)] = _key[index];
+
+        if (!child->_leaf) {
+            child->_nodes[child->_size + 1] = sibling->_nodes[0];
+        }
+
+        _key[index] = sibling->_key[0];
+
+        for (int i = 1; i < sibling->_size; ++i) {
+            sibling->_key[i-1] = sibling->_key[i];
+        }
+
+        if (!sibling->_leaf) {
+            for (int i = 1; i <= sibling->_size; ++i) {
+                sibling->_nodes[i-1] = sibling->_nodes[i];
+            }
+        }
+
+        child->_size += 1;
+        sibling->_size -= 1;
+    }
+
+    void merge(const int index) {
+        node_b_tree<_Tp> *child = _nodes[index];
+        node_b_tree<_Tp> *sibling = _nodes[index+1];
+
+        child->_key[_degree-1] = _key[index];
+
+        for (int i = 0; i < sibling->_size; ++i)
+            child->_key[i+_degree] = sibling->_key[i];
+
+        if (!child->_leaf) {
+            for (int i = 0; i <= sibling->_size; ++i) {
+                child->_nodes[i+_degree] = sibling->_nodes[i];
+            }
+        }
+
+        for (int i = index+1; i < _size; ++i) {
+            _key[i-1] = _key[i];
+        }
+
+        for (int i = index+2; i <= _size; ++i) {
+            _nodes[i-1] = _nodes[i];
+        }
+
+        child->_size += sibling->_size + 1;
+        _size -= 1;
+
+        delete sibling;
     }
 
     void append(const key_type key) {
@@ -117,7 +267,7 @@ public:
         }
         return stream;
     }
-public:
+private:
     int          _degree;
     int          _size;
     key_type        *_key;
@@ -146,15 +296,25 @@ public:
         delete _root;
     }
 public:
-    node_type* search(const int key) {
+    node_type* search(const key_type key) {
         if (_root == nullptr) {
             return nullptr;
         }
         return _root->search(key);
     }
     
-    void remove(const int key) {
-
+    void remove(const key_type key) {
+        if (_root != nullptr) {
+            _root->remove(key);
+            if (_root->_size == 0) {
+                if (_root->_leaf) {
+                    _root = nullptr;
+                } else {
+                    _root = _root->_nodes[0];
+                }
+                delete _root;
+            }
+        }
     }
 
     void append(const key_type key) {

@@ -9,13 +9,12 @@ int main(int argc, char** argv) {
     t.append(30);
     t.append(40);
     t.append(50);
-    t.append(60);
-    t.append(70);
-    t.append(80);
-    t.append(90);
-    t.append(100);
-    t.append(110);
+    t.append(51);
+    t.append(56);
+    t.append(45);
 
-    std::cout << *t.search(110) << std::endl;
+    t.remove(45);
+
+    std::cout << t << std::endl;
     return 0;
 }
