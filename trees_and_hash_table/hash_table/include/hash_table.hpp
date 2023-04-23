@@ -10,13 +10,12 @@
 template <typename _vTp, typename _kTp>
 class node_hash_table {
 public:
-    template <typename _vTp1, typename _kTp1, typename _hFunc>
+    template <typename _vTp1, typename _kTp1, typename _hFunc, typename _shFunc>
     friend class hash_table;
 
     using value_type = _vTp;
     using key_type = _kTp;
 public:
-// Constructors.
     node_hash_table()
         :
         _state(false) {
@@ -47,7 +46,6 @@ public:
     }
 // Movable constructors.
     node_hash_table(node_hash_table&&) = default;
-// Destructros.
     ~node_hash_table() = default;
 public:
     friend std::ostream& operator<<(std::ostream &stream, const node_hash_table &node) {
@@ -63,29 +61,26 @@ private:
     value_type  _value;
 };
 
-#define HASH_TABLE_BUFFER_CAPACITY_ 2
-template <typename _vTp, typename _kTp, typename _hFunc>
+#define HASH_TABLE_BUFFER_CAPACITY_ 1
+template <typename _vTp, typename _kTp, typename _hFunc, typename _shFunc>
 class hash_table {
 public:
     using value_type = _vTp;
     using key_type = _kTp;
     using hash_func_type = _hFunc;
+    using step_hash_func_type = _shFunc;
     using node_type = node_hash_table<_vTp, _kTp>;
 public:
-// Constructors.
     hash_table()
         :
         _capacity(HASH_TABLE_BUFFER_CAPACITY_),
-        _size(0),
         _buffer(new node_type[HASH_TABLE_BUFFER_CAPACITY_]) {
-
     }
 // Not movable constructos.
     hash_table(const hash_table&) = default;
     hash_table& operator=(const hash_table&) = default;
 // Movable constructors.
     hash_table(hash_table&&) = default;
-// Destructors.
     ~hash_table() {
         mem_free();
     }
@@ -108,10 +103,20 @@ public:
         if (empty()) {
             return false;
         }
-        for (size_t index = 0; index < _capacity; ++index) {
-            if (_buffer[index]._state && _buffer[index]._key == key) {
-               return true;
-            }
+        size_t index = _hash(key) % _capacity;
+        if (!_buffer[index]._state) {
+            return false;
+        }
+        if (_buffer[index]._state && _buffer[index]._key == key) {
+            return true;
+        } else {
+            index = _step_hash(key) % _capacity;
+            do {
+                if (_buffer[index]._state && _buffer[index]._key == key) {
+                    return true;
+                }
+                index = (index + 1) % _capacity;
+            } while (!_buffer[index]._state);
         }
         return false;
     }
@@ -121,21 +126,23 @@ public:
             mem_reallocation();
         }
         size_t index = _hash(key) % _capacity;
-        if (!_buffer[index]._state) {
-            _buffer[index] = node_type{key, value};
-            _size += 1;
-            return;
-        }
-        if (contains(key)) {
+        if (_buffer[index]._state && _buffer[index]._key == key) {
             throw std::out_of_range("item already exists");
         }
-        while (true) {
-            index = (index + 1) % _capacity;
-            if (!_buffer[index]._state) {
-                _buffer[index] = node_type{key, value};
-                _size += 1;
-                return;
-            }
+        if (!_buffer[index]._state) {
+            _buffer[index] = node_type{key, value};
+        } else {
+            index = _step_hash(key) % _capacity;
+            do {
+                if (_buffer[index]._state && _buffer[index]._key == key) {
+                    throw std::out_of_range("item already exists");
+                }
+                if (!_buffer[index]._state) {
+                    _buffer[index] = node_type{key, value};
+                    break;
+                }
+                index = (index + 1) % _capacity;
+            } while (true);
         }
     }
 
@@ -147,22 +154,21 @@ public:
             }
             if (_buffer[index]._state && _buffer[index]._key == key) {
                 _buffer[index]._state = false;
-                _size -= 1;
-                return;
-            }
-            if (!contains(key)) {
-                throw std::out_of_range("item already exists");
-            }
-            while (true) {
-                index = (index + 1) % _capacity;
-                if (_buffer[index]._state && _buffer[index]._key == key) {
-                    _buffer[index]._state = false;
-                    _size -= 1;
-                    return;
-                }
+            } else {
+                index = _step_hash(key) % _capacity;
+                do {
+                    if (!_buffer[index]._state) {
+                        throw std::out_of_range("item is not found");
+                    }
+                    if (_buffer[index]._state && _buffer[index]._key == key) {
+                        _buffer[index]._state = false;
+                        break;
+                    }
+                    index = (index + 1) % _capacity;
+                } while (true);
             }
         }
-    }
+   }
     
     node_type& at(const key_type key) {
         if (!empty()) {
@@ -172,14 +178,18 @@ public:
             }
             if (_buffer[index]._state && _buffer[index]._key == key) {
                 return _buffer[index];
+            } else {
+                index = _step_hash(key) % _capacity;
+                do {
+                    if (!_buffer[index]._state) {
+                        throw std::out_of_range("item is not found");
+                    }
+                    if (_buffer[index]._state && _buffer[index]._key == key) {
+                        return _buffer[index];
+                    }
+                    index = (index + 1) % _capacity;
+                } while (true);
             }
-            while (contains(key)) {
-                index = (index + 1) % _capacity;
-                if (_buffer[index]._state && _buffer[index]._key == key) {
-                    return _buffer[index];
-                }
-            }
-            throw std::out_of_range("item is not found");
         }
         throw std::out_of_range("hash table is empty");
     }
@@ -189,7 +199,7 @@ public:
         if (contains(key)) {
             return at(key);
         } else {
-            if (_size >= _capacity) {
+            if (size() >= _capacity) {
                 mem_reallocation();
             }
             size_t index = _hash(key) % _capacity;
@@ -198,7 +208,7 @@ public:
                 return _buffer[index];
             }
             while (true) {
-                index = (index + 1) % _capacity;
+                index = _step_hash(key) % _capacity;
                 if (!_buffer[index]._state) {
                     _buffer[index]._key = key;
                     return _buffer[index];
@@ -221,8 +231,22 @@ private:
     void mem_reallocation() {
         _capacity *= 2;
         node_type *new_buffer = new node_type[_capacity];
-        for (size_t index = 0; index < _size; ++index) {
-            new_buffer[index] = _buffer[index];
+        for (size_t index = 0; index < _capacity/2; ++index) {
+            if (_buffer[index]._state) {
+                size_t hindex = _hash(_buffer[index]._key) % _capacity;
+                if (!new_buffer[hindex]._state) {
+                    new_buffer[hindex] = _buffer[index];
+                } else {
+                    hindex = _step_hash(_buffer[index]._key) % _capacity;
+                    do {
+                        if (!new_buffer[hindex]._state) {
+                            new_buffer[hindex] = _buffer[index];
+                            break;
+                        }
+                        hindex = (hindex + 1) % _capacity;
+                    } while (true);
+                }
+            }
         }
         delete _buffer;
         _buffer = new_buffer;
@@ -231,10 +255,10 @@ private:
         delete[] _buffer;
     }
 private:
-    size_t          _capacity;
-    size_t          _size;
-    node_type       *_buffer;
-    hash_func_type  _hash;
+    size_t                  _capacity;
+    node_type               *_buffer;
+    hash_func_type          _hash;
+    step_hash_func_type     _step_hash;
 };
 
 #endif // HASH_TABLE_H_
