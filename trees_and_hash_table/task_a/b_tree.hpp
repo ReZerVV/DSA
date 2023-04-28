@@ -296,7 +296,11 @@ public:
     b_tree(const b_tree&) = default;
     b_tree& operator=(const b_tree&) = default;
 // Movable constructors.
-    b_tree(b_tree&&) = default;
+    b_tree(b_tree &&other) {
+        _root = other._root;
+        other._root = nullptr;
+        _degree = other._degree;
+    }
     ~b_tree() {
         delete _root;
     }
