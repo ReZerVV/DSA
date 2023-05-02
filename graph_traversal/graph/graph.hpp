@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <queue>
 
 class graph { 
 public:
@@ -23,30 +24,56 @@ public:
         _adjacency_matrix(std::move(other._adjacency_matrix)) {}
     ~graph() {}
 public:
-    std::vector<std::pair<int32_t, int32_t> > bfs() {
+    std::vector<int32_t> bfs(const int32_t start, const int32_t target = -1) {
+        std::vector<int32_t> _spanning_tree{  };
+
+        std::vector<bool> visited( _adjacency_matrix.size(), false );
+        visited[start] = true;
         
+        std::queue<int32_t> vertices;
+        vertices.push(start);
+
+        while (!vertices.empty()) {
+            int32_t vertex = vertices.front();
+            vertices.pop();
+            _spanning_tree.push_back(vertex);
+
+            if (vertex == target) {
+                break;
+            }
+            
+            for (size_t u = 0; u < _adjacency_matrix[vertex].size(); ++u) {
+                if (_adjacency_matrix[vertex][u] != 0 && !visited[u]) {
+                    visited[u] = true;
+                    vertices.push(u);
+                }
+            }
+        }
+
+        return _spanning_tree;
     }
     
-    std::vector<std::pair<int32_t, int32_t> > dfs(const int32_t start_vertex) {
+    std::vector<std::pair<int32_t, int32_t> > dfs(const int32_t start, const int32_t target = -1) {
         std::vector<std::pair<int32_t, int32_t> > _spanning_tree{  };
-        std::vector<bool> visited( _adjacency_matrix.size(), false );
-        
-        visited[start_vertex] = true;
-        std::stack<int32_t> vertices{{ start_vertex }};
-        
-        int32_t prev_vertex = -1;
-        while (!vertices.empty()) {
 
+        std::vector<bool> visited( _adjacency_matrix.size(), false );
+        visited[start] = true;
+
+        std::stack<int32_t> vertices{{ start }};
+
+        while (!vertices.empty()) {
             int32_t vertex = vertices.top();
             vertices.pop();
-            
             visited[vertex] = true;
+
+            if (vertex == target) {
+                break;
+            }
             
             for (size_t u = 0; u < _adjacency_matrix[vertex].size(); ++u) {
                 if (_adjacency_matrix[vertex][u] != 0 && !visited[u]) {
                     _spanning_tree.push_back({vertex, u});
                     vertices.push(u);
-                    prev_vertex = u;
                 }
             }
         }
