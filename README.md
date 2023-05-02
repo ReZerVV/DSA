@@ -23,7 +23,6 @@
 * BFS - _https://www.programiz.com/dsa/graph-bfs_
 * BFS - https://en.wikipedia.org/wiki/Breadth-first_search
 
-
 ## Linear data structures.
 
 __Operations on a doubly linked list:__
@@ -83,7 +82,6 @@ __Operations on a Haffman:__
 `encode` - encode string into a sequence of bytes (huffman string).
 
 `decode` - decode heffman string.
-
 
 ## Graph traversal.
 

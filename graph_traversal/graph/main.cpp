@@ -9,9 +9,22 @@
     ліс пошуку в глибину, виводити результат обходу тощо.
 */
 
+#include "graph.hpp"
 #include <iostream>
 
 int main(int argc, char** argv) {
+    graph g{{
+        {0,1,0},
+        {1,0,1},
+        {0,1,0}
+    }};
+    
+    std::cout << g << std::endl;
+    
+    std::vector<std::pair<int32_t, int32_t> > tree = g.dfs(1);
+    for (auto it = tree.begin(); it != tree.end(); ++it) {
+        std::cout << it->first << ' ' << it->second << std::endl;
+    }
     
     return 0;
 }
