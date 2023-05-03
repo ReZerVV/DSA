@@ -89,6 +89,7 @@ public:
                 if (_adjacency_matrix[vertex][u] != NONE && !visited[u]) {
                     _spanning_tree.push_back({vertex, u});
                     vertices.push(u);
+                    break;
                 }
             }
         }
