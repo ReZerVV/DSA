@@ -8,7 +8,7 @@
 #include <vector>
 #include <stack>
 #include <queue>
-#include <limits>
+#include <algorithm>
 
 #define NONE 0
 // #define INF std::numeric_limits<int32_t>::max()
@@ -46,7 +46,6 @@ public:
         nodes(std::move(other.nodes)) {}
     ~graph() {}
 public:
-//  
     void graph_from_file(const std::string file_path) {
         std::ifstream file;
         file.open(file_path);
@@ -104,6 +103,52 @@ public:
         }
         return true;
     }
+    std::vector<int32_t> get_negative_cycle(const int32_t start = 0) {
+        std::vector<int32_t> path( nodes.size(), -1 );
+        std::vector<int32_t> distance( nodes.size(), INF );
+        std::vector<edge_type> edges = edge_list_from_matrix(nodes);
+        
+        distance[start] = 0;
+        for (int32_t i = 1; i <= nodes.size() - 1; ++i) {
+            for (int32_t j = 0; j < edges.size(); ++j) {
+                int32_t v = edges[j].v;
+                int32_t u = edges[j].u;
+                int32_t w = edges[j].w;
+                if (distance[v] != INF && distance[v] + w < distance[u]) {
+                    distance[u] = distance[v] + w;
+                    path[u] = v;
+                }
+            }
+        }
+
+        int32_t cycle_index = -1;
+        for (cycle_index = 0; cycle_index < edges.size(); ++cycle_index) {
+            int32_t v = edges[cycle_index].v;
+            int32_t u = edges[cycle_index].u;
+            int32_t w = edges[cycle_index].w;
+            if (distance[v] != INF && distance[v] + w < distance[u]) {
+                break;
+            }
+        }
+        if (cycle_index != -1) {
+            for (int32_t i = 0; i < nodes.size(); ++i) {
+                cycle_index = path[cycle_index];
+            }
+            
+            std::vector<int32_t> cycle{ };
+            for (int32_t v = cycle_index;; v = path[v]) {
+                cycle.push_back(v);
+                if (v == cycle_index && cycle.size() > 1) {
+                    break;
+                }
+            }
+
+            std::reverse(cycle.begin(), cycle.end());
+            return cycle;
+        }
+
+        return std::vector<int32_t>{  };
+    }
     static std::vector<edge_type> edge_list_from_matrix(const std::vector<std::vector<int32_t> > matrix) {
         std::vector<edge_type> edges{  };
         for (int32_t i = 0; i < matrix.size(); ++i) {
@@ -115,7 +160,7 @@ public:
         } 
         return edges;
     }
-// 
+
     std::vector<int32_t> bfs(const int32_t start, const int32_t target = -1) {
         std::vector<int32_t> _spanning_tree{  };
 
@@ -173,9 +218,9 @@ public:
 
         return _spanning_tree;
     }
-//
+
     std::vector<int32_t> dijkstra(const int32_t start = 0) {
-        std::vector<int32_t> distance( nodes.size(), std::numeric_limits<int32_t>::max() );
+        std::vector<int32_t> distance( nodes.size(), INF );
         distance[start] = 0;
 
         std::vector<bool> visitor( nodes.size(), false );
@@ -250,7 +295,7 @@ public:
 
         return distance; 
     }
-//  
+
     friend std::ostream& operator<<(std::ostream &stream, const graph &g) {
         stream << "graph:" << std::endl;
         for (auto adjacency = g.nodes.begin(); adjacency != g.nodes.end(); ++adjacency) {
