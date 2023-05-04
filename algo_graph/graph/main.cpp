@@ -11,12 +11,12 @@ int main(int argc, char **argv) {
         {INF,  1,INF,  0,  3},
         {INF,INF,INF,INF,  0},
     }};
-    
     std::cout << g << std::endl;
     
+    std::cout <<  std::boolalpha << g.is_contains_negative_cycle() << std::endl;
+    
     std::vector<int32_t> result = g.bellman_fords();
-
-    { // print array.
+    { // print array.s
         std::cout << "result:" << std::endl;
         for (int32_t i = 0; i < result.size(); ++i) {
             if (result[i] == INF)
@@ -26,6 +26,5 @@ int main(int argc, char **argv) {
         }
         std::cout << std::endl;
     }
-
     return 0;
 }

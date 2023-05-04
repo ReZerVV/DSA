@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
 #include <stack>
@@ -24,12 +25,12 @@ public:
     using edge_type = edge;
 
 public:
-    graph(const size_t cv) {
-        nodes.resize(cv);
-        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-            it->resize(cv);
-        }
-    }
+    graph(const std::string file_path) {
+        graph_from_file(file_path);
+    } 
+    graph(const size_t cv)
+        :
+        nodes( cv, std::vector<int32_t>(cv, INF)) {}
     graph(const std::vector<std::vector<int32_t> > &adjacency_matrix)
         :
         nodes(adjacency_matrix) {}
@@ -45,7 +46,49 @@ public:
         nodes(std::move(other.nodes)) {}
     ~graph() {}
 public:
-//
+//  
+    void graph_from_file(const std::string file_path) {
+        std::ifstream file;
+        file.open(file_path);
+        if (!file.is_open()) {
+            std::cout << "file is not found: " << file_path << std::endl;
+            return;
+        }
+        
+        std::string line{  };
+
+        try {
+            getline(file, line);
+            nodes = std::vector<std::vector<int32_t> >( std::stoi(line), std::vector<int32_t>(std::stoi(line)));
+            for (int32_t i = 0; getline(file, line); ++i) {
+                for (int32_t j = 0, pos = line.find(" "); line.find(" ") != std::string::npos; pos = line.find(" "), ++j) {
+                    nodes[i][j] = std::stoi(line.substr(0, pos));
+                    std::cout << std::stoi(line.substr(0, pos)) << "  "; 
+                    line.erase(0, pos + 1);
+                }
+                std::cout << std::endl;
+            }
+        } catch (...) {
+            nodes = std::vector<std::vector<int32_t> >( 1, std::vector<int32_t>(1, INF));
+            std::cout << "incorrect data graph."  << std::endl;
+        }
+    }
+    void graph_to_file(const std::string file_path) {
+        std::ofstream file;
+        file.open(file_path);
+        if (!file.is_open()) {
+            std::cout << "file is not found: " << file_path << std::endl;
+            return;
+        }
+        file << nodes.size() << std::endl;
+        for (int32_t i = 0; i < nodes.size(); ++i) {
+            for (int32_t j = 0; j < nodes.size(); ++j) {
+                file << nodes[i][j] << ' ';
+            }
+            file << std::endl;
+        }
+        file.close();
+    }
     void append_edge(const int32_t fv, const int32_t sv, const int32_t weight) {
         nodes[fv][sv] = weight;
     }
@@ -63,10 +106,10 @@ public:
     }
     static std::vector<edge_type> edge_list_from_matrix(const std::vector<std::vector<int32_t> > matrix) {
         std::vector<edge_type> edges{  };
-        for (int32_t i = 0; i < nodes.size(); ++i) {
-            for (int32_t j = 0; j < nodes.size(); ++j) {
-                if (i != j && nodes[i][j] != INF) {
-                    edges.push_back({ i, j, nodes[i][j] });
+        for (int32_t i = 0; i < matrix.size(); ++i) {
+            for (int32_t j = 0; j < matrix.size(); ++j) {
+                if (i != j && matrix[i][j] != INF) {
+                    edges.push_back({ i, j, matrix[i][j] });
                 }
             }
         } 
@@ -201,7 +244,6 @@ public:
             int32_t u = edges[i].u;
             int32_t w = edges[i].w;
             if (distance[v] != INF && distance[v] + w < distance[u]) {
-                std::cout << "graph contains negative cycle: " << v << " -> " << u << " -> ..." << std::endl;
                 return std::vector<int32_t>( nodes.size(), INF );
             }
         }
