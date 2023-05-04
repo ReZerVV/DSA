@@ -218,41 +218,36 @@ public:
 
         return _spanning_tree;
     }
-
-    std::vector<int32_t> dijkstra(const int32_t start = 0) {
+    std::pair<std::vector<int32_t>, std::vector<int32_t> > dijkstra(const int32_t start = 0) {
+        std::vector<int32_t> path( nodes.size(), INF );
         std::vector<int32_t> distance( nodes.size(), INF );
-        distance[start] = 0;
-
         std::vector<bool> visitor( nodes.size(), false );
-
-        std::stack<int32_t> vertices{  };
-        vertices.push(start);
-
-        while (!vertices.empty()) {
-            int32_t vertex = vertices.top();
-            vertices.pop();
-            if (visitor[vertex]) {
-                continue;
-            }
-            visitor[vertex] = true;
-
-            int32_t min_edge_vertex_index = -1;
-            for (int32_t u = 0; u < nodes[vertex].size(); ++u) {
-                if (nodes[vertex][u] != INF && !visitor[u]) {
-                    distance[u] = std::min(distance[vertex] + nodes[vertex][u], distance[u]);
-
-                    if (min_edge_vertex_index == -1 || distance[u] < distance[min_edge_vertex_index]) {
-                        min_edge_vertex_index = u;
+        
+        distance[start] = 0;
+        {  
+            for (int32_t vertex = 0; vertex < nodes.size(); ++vertex) {
+                int32_t min_distance_index = -1;
+                for (int32_t i = 0; i < distance.size(); ++i) {
+                    if (!visitor[i] && (distance[i] < distance[min_distance_index] || min_distance_index == -1) ) {
+                        min_distance_index = i;
                     }
                 }
-            }
-            
-            if (min_edge_vertex_index != -1) {
-                vertices.push(min_edge_vertex_index);
+                
+                if (min_distance_index == -1) continue;
+                int32_t v = min_distance_index;
+                visitor[v] = true;
+
+                for (int32_t u = 0; u < nodes.size(); ++u) {
+                    if (!visitor[u] && nodes[v][u] != INF && distance[v] + nodes[v][u] < distance[u]) {
+                        distance[u] = distance[v] + nodes[v][u];
+                        path[u] = v;
+                    }
+                    //distance[u] = std::min(distance[v] + nodes[v][u], distance[u]);
+                }
             }
         }
 
-        return distance;
+        return std::make_pair(distance, path);
     }
     std::vector<std::vector<int32_t> > floyd_warshall() {
         std::vector<std::vector<int32_t> > distance = nodes;
