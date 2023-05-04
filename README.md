@@ -23,6 +23,10 @@
 * BFS - _https://www.programiz.com/dsa/graph-bfs_
 * BFS - https://en.wikipedia.org/wiki/Breadth-first_search
 
+* Dijkstra - _https://www.programiz.com/dsa/dijkstra-algorithm_
+* Floyd-Warshall - _https://www.programiz.com/dsa/floyd-warshall-algorithm_
+* Bellman-Ford's - _https://www.programiz.com/dsa/bellman-ford-algorithm_
+
 ## Linear data structures.
 
 __Operations on a doubly linked list:__
@@ -90,3 +94,13 @@ __Operations on a Graph:__
 `dfs` - is an algorithm for traversing or searching tree or graph data structures.
 
 `bfs` - s an algorithm for traversing or searching tree or graph data structures.
+
+## Graph algorithms.
+ 
+__Operations on a Graph:__
+
+`dijkstra` - 
+
+`floyd_warshall` - 
+
+`bellman_fords` - 
